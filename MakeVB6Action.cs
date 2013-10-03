@@ -11,7 +11,7 @@ namespace Inedo.BuildMasterExtensions.VB6
     /// </summary>
     [ActionProperties("Make VB6 Project", "Makes a VB6 project.", "VB6")]
     [CustomEditor(typeof(MakeVB6ActionEditor))]
-    public sealed class MakeVB6Action : CommandLineActionBase
+    public sealed class MakeVB6Action : RemoteActionBase
     {
         /// <summary>
         /// Gets or sets the project name to build
@@ -49,18 +49,18 @@ namespace Inedo.BuildMasterExtensions.VB6
             string tempFile = Path.GetTempFileName();
 
             // Run make
-            string exitCode = this.ExecuteCommandLine(
+            int exitCode = this.ExecuteCommandLine(
                 exePath,
                 string.Format(
                     @"/make ""{0}"" /out ""{1}"" /outdir ""{2}"" /d ""{3}""",
                     this.ProjectName,
                     tempFile,
-                    this.RemoteConfiguration.TargetDirectory,
+                    this.Context.TargetDirectory,
                     this.ConditionalCompilationArguments),
-                this.RemoteConfiguration.SourceDirectory);
+                this.Context.SourceDirectory);
 
             // Log output
-            if (exitCode == "0")
+            if (exitCode == 0)
             {
                 this.LogInformation(File.ReadAllText(tempFile));
             }
@@ -70,9 +70,8 @@ namespace Inedo.BuildMasterExtensions.VB6
                 this.LogError("An error was reported during compilation. VB6.EXE exited with code " + exitCode + ".");
             }
 
-            return exitCode;
+            return exitCode.ToString();
         }
-
 
         public override string ToString()
         {
